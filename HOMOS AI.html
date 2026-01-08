@@ -34,7 +34,7 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
 <!-- INPUT -->
 <div class="p-4 border-t border-white/10">
   <div class="flex gap-2 items-end bg-[#11162a] p-3 rounded-xl">
-    
+
     <input type="file" id="file" hidden accept="image/*" onchange="handleFile(this)">
     <button onclick="document.getElementById('file').click()" class="opacity-60 hover:opacity-100">
       <i data-lucide="image"></i>
@@ -60,10 +60,10 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
 // 🔴 ضع مفتاح API الخاص بك هنا
 const apiKey = "AIzaSyCAYty5_UQ32usD_p-DpLtlHamVnD3btM4";
 
-// الموديل المدعوم من المتصفح
+// الموديل المدعوم
 const MODEL = "gemini-1.5-flash";
 
-// هوية HOMOS AI (التوثيق)
+// هوية HOMOS AI
 const SYSTEM_PROMPT = `
 أنت HOMOS AI.
 مساعد ذكاء اصطناعي عربي متقدم.
@@ -112,22 +112,28 @@ async function send(){
   base64Image = null;
 }
 
-/* ================== الاتصال بالذكاء الاصطناعي ================== */
+/* ================== الاتصال بـ HOMOS AI ================== */
 async function callHomosAI(prompt, image, loadingId){
 
   const payload = {
-    contents: [{
-      role: "user",
-      parts: [
-        { text: prompt || "اشرح الصورة" },
-        ...(image ? [{
-          inlineData: { mimeType: "image/png", data: image }
-        }] : [])
-      ]
-    }],
-    systemInstruction: {
-      parts: [{ text: SYSTEM_PROMPT }]
-    }
+    contents: [
+      {
+        role: "system",
+        parts: [{ text: SYSTEM_PROMPT }]
+      },
+      {
+        role: "user",
+        parts: [
+          { text: prompt || "اشرح الصورة" },
+          ...(image ? [{
+            inlineData: {
+              mimeType: "image/png",
+              data: image
+            }
+          }] : [])
+        ]
+      }
+    ]
   };
 
   const response = await fetch(

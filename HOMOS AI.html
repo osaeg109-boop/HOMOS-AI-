@@ -33,7 +33,7 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
   <div class="flex gap-2 items-end bg-[#11162a] p-3 rounded-xl">
 
     <input type="file" id="file" hidden accept="image/*" onchange="handleFile(this)">
-    <button onclick="document.getElementById('file').click()" class="opacity-60 hover:opacity-100">
+    <button onclick="document.getElementById('file').click()">
       <i data-lucide="image"></i>
     </button>
 
@@ -41,14 +41,10 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
       class="flex-1 bg-transparent resize-none outline-none"
       oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
 
-    <button onclick="send()" class="bg-indigo-600 p-2 rounded-lg hover:bg-indigo-700">
+    <button onclick="send()" class="bg-indigo-600 p-2 rounded-lg">
       <i data-lucide="send"></i>
     </button>
   </div>
-
-  <p class="text-[10px] text-center opacity-30 mt-3">
-    HOMOS AI • Designed & Developed by Mohamed Homos
-  </p>
 </div>
 
 <script>
@@ -60,16 +56,21 @@ const SYSTEM_PROMPT = `
 أنت HOMOS AI.
 مساعد ذكاء اصطناعي عربي متقدم.
 تم تطويرك وتخصيصك بواسطة Mohamed Homos.
-
-قواعد:
-- عرّف نفسك دائمًا باسم HOMOS AI
-- لا تذكر Google أو Gemini
-- استخدم العربية الفصحى المبسطة
-- كن واضحًا ومهنيًا
+لا تذكر Google أو Gemini.
 `;
 
 let base64Image = null;
+let memory = JSON.parse(localStorage.getItem("homos_memory")) || [];
+
 lucide.createIcons();
+
+/* ========= تحميل الذاكرة ========= */
+memory.forEach(m => addMessage(m.role, m.text));
+
+/* ========= حفظ الذاكرة ========= */
+function saveMemory() {
+  localStorage.setItem("homos_memory", JSON.stringify(memory));
+}
 
 /* ========= صورة ========= */
 function handleFile(input){
@@ -86,64 +87,48 @@ async function send(){
   const text = input.value.trim();
   if(!text && !base64Image) return;
 
-  addMessage("user", text || "📷 صورة");
-  input.value = "";
-  input.style.height = "auto";
+  addMessage("user", text);
+  memory.push({ role: "user", text });
+  saveMemory();
 
+  input.value = "";
   const loadingId = addLoading();
 
-  try {
-    await callHomosAI(text, base64Image, loadingId);
-  } catch {
-    updateMessage(loadingId, "❌ حدث خطأ غير متوقع");
-  }
-
-  base64Image = null;
+  await callHomosAI(loadingId);
 }
 
 /* ========= الاتصال ========= */
-async function callHomosAI(prompt, image, loadingId){
+async function callHomosAI(loadingId){
 
-  const payload = {
-    contents: [
-      {
-        role: "system",
-        parts: [{ text: SYSTEM_PROMPT }]
-      },
-      {
-        role: "user",
-        parts: [
-          { text: prompt || "اشرح الصورة" },
-          ...(image ? [{
-            inlineData: { mimeType: "image/png", data: image }
-          }] : [])
-        ]
-      }
-    ]
-  };
+  const contents = [
+    { role: "system", parts: [{ text: SYSTEM_PROMPT }] },
+    ...memory.map(m => ({
+      role: m.role,
+      parts: [{ text: m.text }]
+    }))
+  ];
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ contents })
     }
   );
 
   const data = await res.json();
-  console.log(data);
 
   if (data.error) {
     updateMessage(loadingId, "❌ " + data.error.message);
     return;
   }
 
-  const reply =
-    data.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "❌ لم يتم الحصول على رد";
+  const reply = data.candidates[0].content.parts[0].text;
 
   updateMessage(loadingId, reply);
+  memory.push({ role: "model", text: reply });
+  saveMemory();
 }
 
 /* ========= UI ========= */
@@ -152,10 +137,10 @@ function addMessage(role, text){
   const div = document.createElement("div");
   div.className = "flex gap-3 " + (role === "user" ? "flex-row-reverse" : "");
   div.innerHTML = `
-    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs">
+    <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
       ${role === "user" ? "أنت" : "AI"}
     </div>
-    <div class="bg-white/5 p-4 rounded-xl max-w-xl whitespace-pre-wrap">${text}</div>
+    <div class="bg-white/5 p-4 rounded-xl max-w-xl">${text}</div>
   `;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
@@ -163,25 +148,13 @@ function addMessage(role, text){
 
 function addLoading(){
   const id = "load-" + Date.now();
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.id = id;
-  div.className = "flex gap-3";
-  div.innerHTML = `
-    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">AI</div>
-    <div class="bg-white/5 p-4 rounded-xl flex items-center gap-2">
-      <span class="loader"></span>
-      <span class="opacity-60">HOMOS AI يفكر...</span>
-    </div>
-  `;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  addMessage("model", "HOMOS AI يفكر...");
   return id;
 }
 
-function updateMessage(id, text){
-  const el = document.getElementById(id);
-  if(el) el.querySelector(".bg-white\\/5").innerText = text;
+function updateMessage(_, text){
+  const last = document.querySelectorAll(".bg-white\\/5");
+  last[last.length - 1].innerText = text;
 }
 </script>
 

@@ -1,321 +1,200 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOMOS AI - Ultimate Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Noto Sans Arabic', sans-serif; transition: all 0.3s ease; }
-        .dark { background-color: #080a11; color: #e2e8f0; }
-        .light { background-color: #f8fafc; color: #0f172a; }
-        .glass-dark { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .glass-light { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(0, 0, 0, 0.05); }
-        .message-anim { animation: slideUp 0.4s ease-out forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .loader { width: 20px; height: 20px; border: 3px solid #6366f1; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #chat-container::-webkit-scrollbar { width: 5px; }
-        #chat-container::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMOS AI</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Noto Sans Arabic', sans-serif; }
+.loader {
+  width:18px;height:18px;border:3px solid #6366f1;
+  border-bottom-color:transparent;border-radius:50%;
+  animation:spin 1s linear infinite
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+</style>
 </head>
-<body class="dark h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 right-0 z-50 w-72 bg-[#05070a] border-l border-white/5 transition-transform transform md:relative md:translate-x-0 translate-x-full flex flex-col">
-        <div class="p-6">
-            <div class="flex items-center gap-3 mb-10">
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
-                    <i data-lucide="sparkles" class="text-white w-6 h-6"></i>
-                </div>
-                <h1 class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">HOMOS AI</h1>
-            </div>
-            
-            <button onclick="window.location.reload()" class="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all mb-4">
-                <i data-lucide="plus" size="18"></i>
-                <span>محادثة جديدة</span>
-            </button>
-        </div>
+<body class="bg-[#0b1020] text-white h-screen flex flex-col">
 
-        <div class="flex-1 px-4 overflow-y-auto">
-            <div class="p-5 rounded-2xl bg-indigo-600/5 border border-indigo-500/20">
-                <p class="text-xs font-bold text-indigo-400 mb-2 uppercase tracking-tighter">المطور الرئيسي</p>
-                <p class="text-sm font-medium text-white mb-1">Mohamed Homos</p>
-                <p class="text-[11px] text-slate-500 leading-relaxed">هذا المساعد الذكي تم تخصيصه وتطويره بواسطة Mohamed Homos ليكون قادراً على الإدراك البصري وتوليد الفنون الرقمية.</p>
-            </div>
-        </div>
+<!-- HEADER -->
+<header class="p-4 border-b border-white/10 flex justify-between items-center">
+  <h1 class="font-bold text-lg">HOMOS AI</h1>
+  <span class="text-xs opacity-40">Advanced AI Assistant</span>
+</header>
 
-        <div class="p-6 border-t border-white/5">
-            <button onclick="toggleTheme()" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <i id="theme-icon" data-lucide="sun" class="text-yellow-500"></i>
-                <span id="theme-text">الوضع النهاري</span>
-            </button>
-        </div>
-    </aside>
+<!-- CHAT -->
+<div id="chat" class="flex-1 overflow-y-auto p-4 space-y-6"></div>
 
-    <!-- Main -->
-    <main class="flex-1 flex flex-col relative min-w-0">
-        <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 glass-dark z-10">
-            <button onclick="toggleSidebar()" class="md:hidden p-2"><i data-lucide="menu"></i></button>
-            <div class="flex items-center gap-3">
-                <span class="text-xs font-bold px-2 py-1 rounded bg-green-500/10 text-green-500 border border-green-500/20">Mohamed Homos Engine V4</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <i data-lucide="settings" class="w-5 h-5 opacity-40 cursor-pointer hover:opacity-100"></i>
-                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">H</div>
-            </div>
-        </header>
+<!-- INPUT -->
+<div class="p-4 border-t border-white/10">
+  <div class="flex gap-2 items-end bg-[#11162a] p-3 rounded-xl">
+    
+    <input type="file" id="file" hidden accept="image/*" onchange="handleFile(this)">
+    <button onclick="document.getElementById('file').click()" class="opacity-60 hover:opacity-100">
+      <i data-lucide="image"></i>
+    </button>
 
-        <!-- Messages Area -->
-        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-10">
-            <div class="max-w-4xl mx-auto flex gap-5 message-anim">
-                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20">
-                    <i data-lucide="sparkles" class="text-white w-5 h-5"></i>
-                </div>
-                <div class="flex flex-col gap-2">
-                    <span class="text-[10px] font-bold opacity-40 uppercase">HOMOS AI</span>
-                    <div class="p-5 rounded-2xl rounded-tr-none bg-white/5 border border-white/5 text-slate-200 leading-relaxed shadow-sm">
-                        أهلاً بك! أنا مساعدك المتكامل HOMOS AI. <br><br>
-                        • اكتب <b>"ارسم..."</b> لإنشاء صور فنية. <br>
-                        • ارفع صورة لتحليلها أو شرح محتواها. <br>
-                        • اسأل أي سؤال للحصول على إجابة نموذجية. <br><br>
-                        <span class="text-indigo-400 font-bold italic">تم التطوير بواسطة Mohamed Homos</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <textarea id="prompt" rows="1" placeholder="اسأل HOMOS AI..."
+      class="flex-1 bg-transparent resize-none outline-none"
+      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
 
-        <!-- Input Section -->
-        <div class="p-4 md:p-8">
-            <div class="max-w-4xl mx-auto">
-                <!-- Image Preview -->
-                <div id="preview-box" class="hidden mb-4 relative inline-block">
-                    <img id="img-preview" src="" class="h-28 w-28 object-cover rounded-2xl border-2 border-indigo-500 shadow-2xl ring-4 ring-indigo-500/10">
-                    <button onclick="clearFile()" class="absolute -top-3 -left-3 bg-red-500 text-white rounded-full p-1.5 shadow-xl hover:bg-red-600 transition-colors">
-                        <i data-lucide="x" size="14"></i>
-                    </button>
-                </div>
+    <button onclick="send()" class="bg-indigo-600 p-2 rounded-lg hover:bg-indigo-700">
+      <i data-lucide="send"></i>
+    </button>
+  </div>
 
-                <!-- Input Box -->
-                <div id="input-container" class="relative bg-[#111625] border border-white/10 rounded-3xl p-2 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:border-indigo-500 shadow-2xl">
-                    <div class="flex items-end gap-2">
-                        <button onclick="document.getElementById('file-upload').click()" class="p-3.5 text-slate-400 hover:text-indigo-400 transition-colors" title="رفع صورة">
-                            <i data-lucide="image" size="22"></i>
-                        </button>
-                        <input type="file" id="file-upload" hidden accept="image/*" onchange="handleFile(this)">
-                        
-                        <textarea id="user-prompt" rows="1" placeholder="اسأل أو اطلب رسم صورة..." 
-                            class="flex-1 bg-transparent border-none focus:ring-0 p-3.5 text-sm md:text-base text-white resize-none outline-none overflow-hidden"
-                            oninput="this.style.height = 'auto'; this.style.height = (this.style.scrollHeight) + 'px'"></textarea>
-                        
-                        <button id="btn-send" onclick="handleAction()" class="p-3.5 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg disabled:opacity-30">
-                            <i data-lucide="send" size="20" id="send-icon"></i>
-                        </button>
-                    </div>
-                </div>
-                <p class="text-[10px] text-center mt-4 opacity-30 font-medium tracking-widest">ADVANCED AI SYSTEM • DESIGNED BY MOHAMED HOMOS</p>
-            </div>
-        </div>
-    </main>
+  <p class="text-[10px] text-center opacity-30 mt-3">
+    HOMOS AI • Designed & Developed by Mohamed Homos
+  </p>
+</div>
 
-    <script>
-        const apiKey = "";
-        const MODELS = {
-            TEXT: "gemini-2.5-flash-preview-09-2025",
-            IMAGE: "imagen-4.0-generate-001"
-        };
-        
-        let isDark = true;
-        let base64Image = null;
+<script>
+/* ================== إعدادات ================== */
 
-        lucide.createIcons();
+// 🔴 ضع مفتاح API الخاص بك هنا
+const apiKey = "AIzaSyCAYty5_UQ32usD_p-DpLtlHamVnD3btM4";
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('translate-x-full');
-        }
+// الموديل المدعوم من المتصفح
+const MODEL = "gemini-1.5-flash";
 
-        function toggleTheme() {
-            isDark = !isDark;
-            const body = document.body;
-            const sidebar = document.getElementById('sidebar');
-            const inputContainer = document.getElementById('input-container');
-            
-            if(isDark) {
-                body.className = "dark h-screen flex overflow-hidden";
-                sidebar.classList.add('bg-[#05070a]', 'border-white/5');
-                inputContainer.classList.add('bg-[#111625]', 'border-white/10');
-            } else {
-                body.className = "light h-screen flex overflow-hidden";
-                sidebar.classList.remove('bg-[#05070a]', 'border-white/5');
-                sidebar.classList.add('bg-white', 'border-slate-200');
-                inputContainer.classList.remove('bg-[#111625]', 'border-white/10');
-                inputContainer.classList.add('bg-white', 'border-slate-200');
-            }
-            lucide.createIcons();
-        }
+// هوية HOMOS AI (التوثيق)
+const SYSTEM_PROMPT = `
+أنت HOMOS AI.
+مساعد ذكاء اصطناعي عربي متقدم.
+تم تطويرك وتخصيصك بواسطة Mohamed Homos.
 
-        function handleFile(input) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    base64Image = e.target.result.split(',')[1];
-                    document.getElementById('img-preview').src = e.target.result;
-                    document.getElementById('preview-box').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+قواعد صارمة:
+- قدّم نفسك دائمًا باسم: HOMOS AI
+- لا تذكر أي شركات أو نماذج خارجية
+- استخدم العربية الفصحى المبسطة
+- أسلوبك احترافي وواضح
+- إن لم تعرف الإجابة قل: لا أملك معلومات مؤكدة
+`;
 
-        function clearFile() {
-            base64Image = null;
-            document.getElementById('preview-box').classList.add('hidden');
-            document.getElementById('file-upload').value = "";
-        }
+let base64Image = null;
+lucide.createIcons();
 
-        async function handleAction() {
-            const inputEl = document.getElementById('user-prompt');
-            const prompt = inputEl.value.trim();
-            if (!prompt && !base64Image) return;
+/* ================== رفع صورة ================== */
+function handleFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    base64Image = e.target.result.split(",")[1];
+  };
+  reader.readAsDataURL(file);
+}
 
-            addMessage('user', prompt, base64Image ? document.getElementById('img-preview').src : null);
-            inputEl.value = "";
-            inputEl.style.height = 'auto';
-            
-            const currentImg = base64Image;
-            clearFile();
+/* ================== إرسال ================== */
+async function send(){
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
+  if(!text && !base64Image) return;
 
-            const loadingId = addLoading();
+  addMessage("user", text || "📷 صورة");
+  input.value = "";
+  input.style.height = "auto";
 
-            try {
-                // الكشف عن رغبة المستخدم في إنشاء صورة
-                const isGenerationRequest = prompt.startsWith("ارسم") || prompt.startsWith("انشئ صورة") || prompt.includes("generate image");
+  const loadingId = addLoading();
 
-                if (isGenerationRequest) {
-                    await generateImage(prompt, loadingId);
-                } else {
-                    await chatOrAnalyze(prompt, currentImg, loadingId);
-                }
-            } catch (err) {
-                updateMessage(loadingId, "عذراً، حدث خطأ تقني. يرجى المحاولة مرة أخرى.");
-            }
-        }
+  try {
+    await callHomosAI(text, base64Image, loadingId);
+  } catch (e) {
+    updateMessage(loadingId, "❌ حدث خطأ غير متوقع");
+  }
 
-        async function generateImage(prompt, loadingId) {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS.IMAGE}:predict?key=${apiKey}`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    instances: { prompt: prompt },
-                    parameters: { sampleCount: 1 }
-                })
-            });
-            const data = await response.json();
-            const genImg = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-            
-            updateMessage(loadingId, `تم إنشاء الصورة بناءً على طلبك لـ "${prompt}"`, genImg);
-        }
+  base64Image = null;
+}
 
-        async function chatOrAnalyze(prompt, img, loadingId) {
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt || "ماذا يوجد في الصورة؟" },
-                        ...(img ? [{ inlineData: { mimeType: "image/png", data: img } }] : [])
-                    ]
-                }],
-                systemInstruction: { parts: [{ text: "أنت HOMOS AI، المطور بواسطة Mohamed Homos. إجاباتك يجب أن تكون نموذجية ومهنية." }] }
-            };
+/* ================== الاتصال بالذكاء الاصطناعي ================== */
+async function callHomosAI(prompt, image, loadingId){
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS.TEXT}:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            const data = await response.json();
-            const text = data.candidates[0].content.parts[0].text;
-            updateMessage(loadingId, text);
-        }
+  const payload = {
+    contents: [{
+      role: "user",
+      parts: [
+        { text: prompt || "اشرح الصورة" },
+        ...(image ? [{
+          inlineData: { mimeType: "image/png", data: image }
+        }] : [])
+      ]
+    }],
+    systemInstruction: {
+      parts: [{ text: SYSTEM_PROMPT }]
+    }
+  };
 
-        function addMessage(role, text, img = null) {
-            const container = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `max-w-4xl mx-auto flex gap-5 message-anim ${role === 'user' ? 'flex-row-reverse' : ''}`;
-            
-            const bubbleBg = role === 'user' ? 'bg-indigo-600 text-white' : (isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100 shadow-sm');
-            
-            div.innerHTML = `
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${role === 'user' ? 'bg-slate-800' : 'bg-indigo-600'}">
-                    <i data-lucide="${role === 'user' ? 'user' : 'sparkles'}" class="text-white w-5 h-5"></i>
-                </div>
-                <div class="flex flex-col gap-2 ${role === 'user' ? 'items-end' : 'items-start'}">
-                    <span class="text-[10px] font-bold opacity-40 uppercase">${role === 'user' ? 'أنت' : 'HOMOS AI'}</span>
-                    <div class="p-5 rounded-2xl ${role === 'user' ? 'rounded-tl-none' : 'rounded-tr-none'} ${bubbleBg} text-sm md:text-base leading-relaxed">
-                        ${img ? `<img src="${img}" class="max-w-full h-auto rounded-xl mb-3 shadow-lg border border-white/10">` : ''}
-                        <div class="whitespace-pre-wrap">${text}</div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-            lucide.createIcons();
-            container.scrollTop = container.scrollHeight;
-        }
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }
+  );
 
-        function addLoading() {
-            const id = 'load-' + Date.now();
-            const container = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.id = id;
-            div.className = "max-w-4xl mx-auto flex gap-5 message-anim";
-            div.innerHTML = `
-                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0 animate-pulse">
-                    <i data-lucide="sparkles" class="text-white w-5 h-5"></i>
-                </div>
-                <div class="flex flex-col gap-2">
-                    <span class="text-[10px] font-bold opacity-40 uppercase">HOMOS AI</span>
-                    <div class="p-5 rounded-2xl bg-white/5 flex items-center gap-3">
-                        <span class="loader"></span>
-                        <span class="text-sm opacity-50 italic">HOMOS AI يقوم بالمعالجة الآن...</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-            lucide.createIcons();
-            container.scrollTop = container.scrollHeight;
-            return id;
-        }
+  const data = await response.json();
+  console.log("HOMOS AI Response:", data);
 
-        function updateMessage(id, text, img = null) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            
-            const bubbleBg = isDark ? 'bg-white/5 border border-white/5' : 'bg-white border border-slate-100 shadow-sm';
-            
-            el.innerHTML = `
-                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="sparkles" class="text-white w-5 h-5"></i>
-                </div>
-                <div class="flex flex-col gap-2">
-                    <span class="text-[10px] font-bold opacity-40 uppercase">HOMOS AI</span>
-                    <div class="p-5 rounded-2xl rounded-tr-none ${bubbleBg} text-sm md:text-base leading-relaxed">
-                        ${img ? `
-                            <div class="mb-4">
-                                <img src="${img}" class="max-w-full rounded-xl shadow-2xl border border-white/10">
-                                <a href="${img}" download="HOMOS-AI-Art.png" class="inline-flex items-center gap-2 mt-3 text-xs text-indigo-400 hover:text-indigo-300">
-                                    <i data-lucide="download" size="14"></i> تحميل الصورة
-                                </a>
-                            </div>
-                        ` : ''}
-                        <div class="whitespace-pre-wrap">${text}</div>
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
-            document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
-        }
-    </script>
+  if (data.error) {
+    updateMessage(loadingId, "❌ " + data.error.message);
+    return;
+  }
+
+  const reply =
+    data.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "❌ لم يتم الحصول على رد";
+
+  updateMessage(loadingId, reply);
+}
+
+/* ================== الواجهة ================== */
+function addMessage(role, text){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "flex gap-3 " + (role === "user" ? "flex-row-reverse" : "");
+  div.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs">
+      ${role === "user" ? "أنت" : "AI"}
+    </div>
+    <div class="bg-white/5 p-4 rounded-xl max-w-xl whitespace-pre-wrap">
+      ${text}
+    </div>
+  `;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addLoading(){
+  const id = "load-" + Date.now();
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.id = id;
+  div.className = "flex gap-3";
+  div.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">AI</div>
+    <div class="bg-white/5 p-4 rounded-xl flex items-center gap-2">
+      <span class="loader"></span>
+      <span class="opacity-60">HOMOS AI يفكر...</span>
+    </div>
+  `;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return id;
+}
+
+function updateMessage(id, text){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.querySelector(".bg-white\\/5").innerText = text;
+}
+</script>
+
 </body>
 </html>
-

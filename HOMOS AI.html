@@ -2,31 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HOMOS AI</title>
 
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body { font-family: 'Noto Sans Arabic', sans-serif; }
+body {
+  font-family: 'Noto Sans Arabic', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS smooth scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(6px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+/* Loader */
 .loader {
-  width:16px;height:16px;border:3px solid #6366f1;
-  border-bottom-color:transparent;border-radius:50%;
-  animation:spin 1s linear infinite
+  width:16px;height:16px;
+  border:3px solid #6366f1;
+  border-bottom-color:transparent;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg) } }
+
+/* Safe area for iPhone */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 </style>
 </head>
 
-<body class="bg-[#0b1020] text-white h-screen flex overflow-hidden">
+<body class="bg-[#070b1a] text-white h-screen flex overflow-hidden">
 
 <!-- ===== Sidebar ===== -->
-<aside class="w-64 bg-[#070b18] border-l border-white/10 flex flex-col">
+<aside class="w-64 bg-[#050814] border-l border-white/10 flex flex-col hidden md:flex">
   <div class="p-4 border-b border-white/10">
-    <h1 class="font-bold text-lg">HOMOS AI</h1>
-    <button onclick="newChat()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 rounded-lg py-2 text-sm">
+    <h1 class="font-bold text-lg tracking-wide">HOMOS AI</h1>
+    <button onclick="newChat()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl py-2 text-sm transition">
       ➕ محادثة جديدة
     </button>
   </div>
@@ -37,18 +76,25 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
 <!-- ===== Main ===== -->
 <main class="flex-1 flex flex-col">
 
-<header class="p-4 border-b border-white/10">
-  <span class="text-xs opacity-50">Advanced AI System • Mohamed Homos</span>
+<header class="h-14 flex items-center justify-between px-4 border-b border-white/10 glass">
+  <span class="text-xs opacity-60">Advanced AI • Mohamed Homos</span>
+  <button onclick="toggleMobileMenu()" class="md:hidden">
+    <i data-lucide="menu"></i>
+  </button>
 </header>
 
-<div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6"></div>
+<div id="chat" class="flex-1 overflow-y-auto p-4 space-y-6 safe-bottom"></div>
 
-<div class="p-4 border-t border-white/10">
-  <div class="flex gap-2 items-end bg-[#11162a] p-3 rounded-xl">
-    <textarea id="prompt" rows="1" placeholder="اسأل HOMOS AI..."
-      class="flex-1 bg-transparent resize-none outline-none"
-      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-    <button onclick="send()" class="bg-indigo-600 p-3 rounded-lg">
+<!-- Input -->
+<div class="p-3 border-t border-white/10 glass safe-bottom">
+  <div class="flex gap-2 items-end bg-[#0d1330] rounded-2xl p-3">
+    <textarea id="prompt"
+      rows="1"
+      placeholder="اسأل HOMOS AI..."
+      class="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed"
+      oninput="autoGrow(this)"></textarea>
+
+    <button onclick="send()" class="bg-indigo-600 hover:bg-indigo-700 p-3 rounded-xl transition">
       <i data-lucide="send"></i>
     </button>
   </div>
@@ -56,131 +102,195 @@ body { font-family: 'Noto Sans Arabic', sans-serif; }
 
 </main>
 
+<!-- ===== Mobile Sidebar ===== -->
+<div id="mobileMenu" class="fixed inset-0 bg-black/60 hidden z-50">
+  <div class="absolute right-0 top-0 h-full w-64 bg-[#050814] p-4">
+    <button onclick="toggleMobileMenu()" class="mb-4 text-sm opacity-60">إغلاق ✕</button>
+    <button onclick="newChat();toggleMobileMenu()" class="w-full bg-indigo-600 rounded-xl py-2 text-sm mb-4">
+      ➕ محادثة جديدة
+    </button>
+    <div id="chatListMobile" class="space-y-2"></div>
+  </div>
+</div>
+
 <script>
-/* ========= إعدادات ========= */
+/* ========= CONFIG ========= */
 const apiKey = "AIzaSyCAYty5_UQ32usD_p-DpLtlHamVnD3btM4";
 const MODEL = "gemini-1.0-pro";
 
 const SYSTEM_PROMPT = `
 أنت HOMOS AI.
-مساعد ذكاء اصطناعي عربي احترافي.
+مساعد ذكاء اصطناعي عربي متقدم.
 تم تطويرك وتخصيصك بواسطة Mohamed Homos.
-تحدث بثقة ووضوح ولا تذكر Google أو Gemini.
+تحدث باحتراف وثقة ولا تذكر أي شركات أخرى.
 `;
 
-lucide.createIcons();
-
-/* ========= إدارة المحادثات ========= */
+/* ========= STATE ========= */
 let chats = JSON.parse(localStorage.getItem("homos_chats")) || {};
 let currentChatId = localStorage.getItem("homos_current") || null;
 
-function saveChats() {
+lucide.createIcons();
+
+/* ========= UTIL ========= */
+function autoGrow(el){
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
+function save(){
   localStorage.setItem("homos_chats", JSON.stringify(chats));
   localStorage.setItem("homos_current", currentChatId);
 }
 
-/* ========= محادثة جديدة ========= */
-function newChat() {
+/* ========= CHAT MGMT ========= */
+function newChat(){
   const id = "chat_" + Date.now();
   chats[id] = [];
   currentChatId = id;
-  saveChats();
+  save();
   renderChatList();
   renderMessages();
 }
 
-/* ========= عرض قائمة المحادثات ========= */
-function renderChatList() {
-  const list = document.getElementById("chatList");
-  list.innerHTML = "";
-  Object.keys(chats).forEach(id => {
-    const btn = document.createElement("button");
-    btn.className = "w-full text-right p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm";
-    btn.innerText = chats[id][0]?.text?.slice(0, 30) || "محادثة جديدة";
-    btn.onclick = () => {
-      currentChatId = id;
-      saveChats();
-      renderMessages();
-    };
-    list.appendChild(btn);
+function renderChatList(){
+  const targets = [
+    document.getElementById("chatList"),
+    document.getElementById("chatListMobile")
+  ];
+
+  targets.forEach(list => {
+    if (!list) return;
+    list.innerHTML = "";
+    Object.keys(chats).forEach(id => {
+      const btn = document.createElement("button");
+      btn.className = "w-full text-right p-2 rounded-xl bg-white/5 hover:bg-white/10 text-sm fade-in";
+      btn.textContent = chats[id][0]?.text?.slice(0,28) || "محادثة جديدة";
+      btn.onclick = () => {
+        currentChatId = id;
+        save();
+        renderMessages();
+        toggleMobileMenu(false);
+      };
+      list.appendChild(btn);
+    });
   });
 }
 
-/* ========= عرض الرسائل ========= */
-function renderMessages() {
+function renderMessages(){
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
   if (!currentChatId) return;
+
   chats[currentChatId].forEach(m => addMessage(m.role, m.text));
 }
 
-/* ========= إرسال ========= */
-async function send() {
+/* ========= SEND ========= */
+async function send(){
   if (!currentChatId) newChat();
 
   const input = document.getElementById("prompt");
   const text = input.value.trim();
   if (!text) return;
 
-  addMessage("user", text);
-  chats[currentChatId].push({ role: "user", text });
-  saveChats();
-
   input.value = "";
-  addMessage("model", "HOMOS AI يفكر...", true);
+  autoGrow(input);
 
-  await callAI();
+  addMessage("user", text);
+  chats[currentChatId].push({ role:"user", text });
+  save();
+
+  const thinking = addThinking();
+
+  await callAI(thinking);
 }
 
-/* ========= الاتصال بالذكاء ========= */
-async function callAI() {
+/* ========= API ========= */
+async function callAI(thinkingEl){
   const messages = chats[currentChatId];
 
   const contents = [
-    { role: "system", parts: [{ text: SYSTEM_PROMPT }] },
+    { role:"system", parts:[{ text:SYSTEM_PROMPT }] },
     ...messages.map(m => ({
-      role: m.role,
-      parts: [{ text: m.text }]
+      role:m.role,
+      parts:[{ text:m.text }]
     }))
   ];
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents })
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
+      {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ contents })
+      }
+    );
+
+    const data = await res.json();
+    console.log("API RESPONSE:", data);
+
+    thinkingEl.remove();
+
+    if (data.error) {
+      addMessage("model", "❌ خطأ API:\n" + data.error.message);
+      return;
     }
-  );
 
-  const data = await res.json();
-  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "حدث خطأ";
+    const reply = data.candidates[0].content.parts[0].text;
+    addMessage("model", reply);
+    chats[currentChatId].push({ role:"model", text:reply });
+    save();
 
-  chats[currentChatId].pop();
-  document.querySelector("#chat .thinking").remove();
-
-  addMessage("model", reply);
-  chats[currentChatId].push({ role: "model", text: reply });
-  saveChats();
+  } catch(e) {
+    thinkingEl.remove();
+    addMessage("model", "❌ تعذر الاتصال بالذكاء الاصطناعي");
+  }
 }
 
 /* ========= UI ========= */
-function addMessage(role, text, thinking = false) {
+function addMessage(role,text){
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
-  div.className = "flex gap-3 " + (role === "user" ? "flex-row-reverse" : "");
-  if (thinking) div.classList.add("thinking");
+  div.className = "flex gap-3 fade-in " + (role==="user"?"flex-row-reverse":"");
   div.innerHTML = `
-    <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-xs">
-      ${role === "user" ? "أنت" : "AI"}
+    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs">
+      ${role==="user"?"أنت":"AI"}
     </div>
-    <div class="bg-white/5 p-4 rounded-xl max-w-xl whitespace-pre-wrap">${text}</div>
+    <div class="glass p-4 rounded-2xl max-w-[85%] whitespace-pre-wrap text-sm leading-relaxed">
+      ${text}
+    </div>
   `;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ========= بدء أول مرة ========= */
+function addThinking(){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "flex gap-3 fade-in";
+  div.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs">AI</div>
+    <div class="glass p-4 rounded-2xl flex items-center gap-2 text-sm">
+      <span class="loader"></span>
+      HOMOS AI يفكر...
+    </div>
+  `;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+/* ========= MOBILE ========= */
+function toggleMobileMenu(force){
+  const menu = document.getElementById("mobileMenu");
+  if (force === false) {
+    menu.classList.add("hidden");
+  } else {
+    menu.classList.toggle("hidden");
+  }
+}
+
+/* ========= INIT ========= */
 if (!currentChatId) newChat();
 renderChatList();
 renderMessages();

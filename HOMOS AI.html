@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HOMOS AI</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -14,7 +14,6 @@
   --neon:#22c55e;
   --blue:#38bdf8;
 }
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:'Cairo',sans-serif;
@@ -25,9 +24,8 @@ body{
   color:#fff;
 }
 header{
-  position:sticky;top:0;z-index:10;
-  backdrop-filter:blur(15px);
-  background:rgba(2,6,23,.8);
+  backdrop-filter:blur(14px);
+  background:rgba(2,6,23,.85);
   padding:15px 25px;
   display:flex;justify-content:space-between;align-items:center;
 }
@@ -37,43 +35,54 @@ header h1{
 }
 header button{
   background:linear-gradient(135deg,var(--neon),var(--blue));
-  border:none;
-  padding:10px 20px;
-  border-radius:999px;
-  cursor:pointer;
-  font-weight:bold;
+  border:none;padding:10px 18px;border-radius:999px;
+  cursor:pointer;font-weight:bold;
 }
-section{padding:80px 20px;text-align:center}
-.hero h2{
-  font-family:'Orbitron';
-  font-size:36px;
-  background:linear-gradient(90deg,var(--neon),var(--blue));
-  -webkit-background-clip:text;color:transparent;
+#chat{
+  max-width:900px;
+  margin:30px auto;
+  padding:0 15px;
 }
-.glass{
-  background:var(--glass);
-  backdrop-filter:blur(18px);
-  border-radius:20px;
-  padding:25px;
-  border:1px solid rgba(255,255,255,.15);
-}
-#chatSection,.page{display:none}
-.chat{max-width:900px;margin:auto}
 .msg{
-  padding:16px;border-radius:18px;margin:15px 0;line-height:1.8
+  padding:15px;
+  margin:12px 0;
+  border-radius:16px;
+  line-height:1.8;
 }
 .user{background:linear-gradient(135deg,#2563eb,#38bdf8)}
 .bot{background:rgba(255,255,255,.12)}
 input{
   width:100%;
   padding:15px;
-  margin-top:15px;
   border-radius:15px;
-  border:1px solid rgba(255,255,255,.2);
   background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
   color:#fff;
 }
-footer{padding:30px;text-align:center;opacity:.7}
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(2,6,23,.95);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.box{
+  background:var(--glass);
+  padding:30px;
+  border-radius:20px;
+  max-width:350px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.15);
+}
+.box input{
+  margin-top:15px;
+}
+footer{
+  text-align:center;
+  padding:20px;
+  opacity:.6;
+}
 a{color:var(--neon);text-decoration:none}
 </style>
 </head>
@@ -82,81 +91,62 @@ a{color:var(--neon);text-decoration:none}
 
 <header>
   <h1>HOMOS AI</h1>
-  <button onclick="subscribe()">اشترك</button>
+  <button onclick="openSub()">اشترك</button>
 </header>
 
-<section class="hero" id="landing">
-  <h2>ذكاء ويب مستقل</h2>
-  <p>بيفهم العربي، بيدور في الإنترنت، ويديك الخلاصة.</p>
-</section>
+<div id="chat"></div>
+<input id="input" placeholder="اسأل HOMOS AI..." />
 
-<section id="chatSection">
-  <div class="chat" id="chat"></div>
-  <input id="input" placeholder="اسأل HOMOS AI..." />
-</section>
-
-<section class="page" id="privacy">
-<div class="glass">
-<h2>سياسة الخصوصية</h2>
-<p>لا يتم جمع أي بيانات. كل شيء محفوظ محليًا.</p>
+<div id="subOverlay" class="overlay" style="display:none">
+  <div class="box">
+    <h3>🚫 انتهت النسخة المجانية</h3>
+    <p>اشترك عشان تكمل استخدام HOMOS AI</p>
+    <input id="codeInput" placeholder="ادخل كود الاشتراك">
+    <button onclick="activate()">تفعيل</button>
+    <p><a href="https://wa.me/201012265953" target="_blank">الاشتراك عبر واتساب</a></p>
+  </div>
 </div>
-</section>
-
-<section class="page" id="terms">
-<div class="glass">
-<h2>شروط الاستخدام</h2>
-<ul>
-<li>الخدمة لأغراض معرفية فقط</li>
-<li>النسخة المجانية محدودة</li>
-<li>الاشتراك غير قابل للاسترداد</li>
-</ul>
-</div>
-</section>
 
 <footer>
-<a href="#" onclick="showPage('privacy')">الخصوصية</a> |
-<a href="#" onclick="showPage('terms')">الشروط</a>
+<a href="#" onclick="alert('سياسة الخصوصية: لا يتم جمع أي بيانات')">الخصوصية</a> |
+<a href="#" onclick="alert('شروط الاستخدام: الخدمة معرفية فقط')">الشروط</a>
 </footer>
 
 <script>
+// ===== أكواد الاشتراك =====
+const VALID_CODES = [
+  "HOMOS-A1X9",
+  "HOMOS-B7K2",
+  "HOMOS-Q3M8",
+  "HOMOS-Z9L4",
+  "HOMOS-R5T6"
+];
+
 // ===== الاشتراك =====
-function verifyCode(code){
-  const parts=code.split("-");
-  if(parts.length!==4) return false;
-  if(parts[0]!=="HOMOS") return false;
-  const days=parseInt(parts[1]);
-  const time=parseInt(parts[2]);
-  const sig=parts[3];
-  if(isNaN(days)||isNaN(time)) return false;
-  const validSig=((days+time)%10000).toString(36).toUpperCase().slice(0,4);
-  return sig===validSig;
+function isPro(){
+  const s=JSON.parse(localStorage.getItem("homos_sub"));
+  return s && Date.now()<s;
 }
-function subscribe(){
-  window.open("https://wa.me/201012265953","_blank");
-  const code=prompt("ادخل كود الاشتراك");
-  if(code && verifyCode(code)){
-    const days=parseInt(code.split("-")[1]);
-    localStorage.setItem("homos_sub",JSON.stringify({
-      expires:Date.now()+days*86400000
-    }));
-    alert("تم تفعيل الاشتراك ✅");
+function activate(){
+  const code=document.getElementById("codeInput").value.trim();
+  if(VALID_CODES.includes(code)){
+    localStorage.setItem("homos_sub",Date.now()+30*86400000);
+    alert("تم التفعيل ✅");
     location.reload();
   }else{
-    alert("كود غير صالح ❌");
+    alert("كود غير صحيح ❌");
   }
 }
-const sub=JSON.parse(localStorage.getItem("homos_sub"));
-function isPro(){return sub && Date.now()<sub.expires}
-if(isPro()){
-  landing.style.display="none";
-  chatSection.style.display="block";
+function openSub(){
+  document.getElementById("subOverlay").style.display="flex";
 }
 
-// ===== المجاني =====
+// ===== النسخة المجانية =====
 let usage=JSON.parse(localStorage.getItem("homos_usage"))||{c:0,d:new Date().toDateString()};
 if(usage.d!==new Date().toDateString()){
   usage={c:0,d:new Date().toDateString()};
 }
+const LIMIT=20;
 
 // ===== شخصية =====
 function persona(q){
@@ -174,14 +164,11 @@ async function search(q){
   );
   return fetch(url).then(r=>r.json());
 }
-function sum(t){
-  let s=t.split(".");
-  return s.slice(0,3).join(".");
-}
 
 // ===== الشات =====
 const chat=document.getElementById("chat");
 const input=document.getElementById("input");
+
 function add(t,c){
   const d=document.createElement("div");
   d.className="msg "+c;
@@ -192,10 +179,12 @@ function add(t,c){
 
 input.onkeydown=async e=>{
   if(e.key!=="Enter"||!input.value)return;
-  if(!isPro() && usage.c>=20){
-    add("🚫 انتهت الأسئلة المجانية اليوم.","bot");
+
+  if(!isPro() && usage.c>=LIMIT){
+    openSub();
     return;
   }
+
   usage.c++;
   localStorage.setItem("homos_usage",JSON.stringify(usage));
 
@@ -206,19 +195,10 @@ input.onkeydown=async e=>{
   const p=persona(q);
   if(p){ add(p,"bot"); return; }
 
-  add("🔍 بدوّر...","bot");
+  add("🔍 بدوّر في الويب...","bot");
   const r=await search(q);
-  const text=r.Abstract||r.Answer||"ملقتش معلومة واضحة.";
-  chat.lastChild.textContent=sum(text);
+  add(r.Abstract||"ملقتش معلومة واضحة.","bot");
 };
-
-// ===== تنقل =====
-function showPage(id){
-  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-  chatSection.style.display="none";
-  landing.style.display="none";
-  document.getElementById(id).style.display="block";
-}
 </script>
 
 </body>

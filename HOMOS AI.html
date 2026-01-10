@@ -1,290 +1,224 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HOMOS AI</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"SF Pro",Arial}
-body{background:#020617;color:#fff;height:100vh;display:flex}
-
-/* Sidebar */
-.sidebar{
-  width:260px;
-  background:#020617;
-  border-right:1px solid rgba(255,255,255,.08);
-  padding:14px;
-  display:flex;
-  flex-direction:column
+:root{
+  --bg:#020617;
+  --glass:rgba(255,255,255,.1);
+  --neon:#22c55e;
+  --blue:#38bdf8;
 }
-.logo{
-  font-size:22px;
-  font-weight:800;
-  color:#38bdf8;
-  margin-bottom:15px
-}
-.btn{
-  background:#0f172a;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Cairo',sans-serif;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(34,197,94,.15),transparent 40%),
+    radial-gradient(circle at 80% 30%,rgba(56,189,248,.15),transparent 40%),
+    #020617;
   color:#fff;
+}
+header{
+  position:sticky;top:0;z-index:10;
+  backdrop-filter:blur(15px);
+  background:rgba(2,6,23,.8);
+  padding:15px 25px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+header h1{
+  font-family:'Orbitron';
+  color:var(--neon);
+}
+header button{
+  background:linear-gradient(135deg,var(--neon),var(--blue));
   border:none;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
+  padding:10px 20px;
+  border-radius:999px;
   cursor:pointer;
-  text-align:center
+  font-weight:bold;
 }
-.chat-list{flex:1;overflow-y:auto}
-.chat-item{
-  padding:10px;
-  border-radius:8px;
-  cursor:pointer;
-  opacity:.85
+section{padding:80px 20px;text-align:center}
+.hero h2{
+  font-family:'Orbitron';
+  font-size:36px;
+  background:linear-gradient(90deg,var(--neon),var(--blue));
+  -webkit-background-clip:text;color:transparent;
 }
-.chat-item:hover{background:#0f172a}
-
-/* Main */
-.main{flex:1;display:flex;flex-direction:column}
-.header{
-  padding:14px;
-  text-align:center;
-  border-bottom:1px solid rgba(255,255,255,.08)
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(18px);
+  border-radius:20px;
+  padding:25px;
+  border:1px solid rgba(255,255,255,.15);
 }
-.chat{
-  flex:1;
-  padding:15px;
-  overflow-y:auto
-}
+#chatSection,.page{display:none}
+.chat{max-width:900px;margin:auto}
 .msg{
-  max-width:80%;
-  padding:12px;
-  border-radius:14px;
-  margin-bottom:10px;
-  font-size:14px;
-  line-height:1.6
+  padding:16px;border-radius:18px;margin:15px 0;line-height:1.8
 }
-.user{background:#2563eb;margin-left:auto}
-.ai{background:#0f172a;border:1px solid rgba(255,255,255,.06)}
-
-.input{
-  display:flex;
-  gap:10px;
-  padding:12px;
-  border-top:1px solid rgba(255,255,255,.08)
-}
+.user{background:linear-gradient(135deg,#2563eb,#38bdf8)}
+.bot{background:rgba(255,255,255,.12)}
 input{
-  flex:1;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#0f172a;
-  color:#fff
+  width:100%;
+  padding:15px;
+  margin-top:15px;
+  border-radius:15px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);
+  color:#fff;
 }
-.send{
-  padding:12px 18px;
-  border:none;
-  border-radius:10px;
-  background:#38bdf8;
-  color:#000;
-  font-weight:700;
-  cursor:pointer
-}
-
-/* Modal */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  display:none;
-  align-items:center;
-  justify-content:center
-}
-.box{
-  background:#020617;
-  padding:20px;
-  border-radius:14px;
-  width:90%;
-  max-width:420px
-}
-.plan{
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:8px
-}
-.plan b{color:#38bdf8}
+footer{padding:30px;text-align:center;opacity:.7}
+a{color:var(--neon);text-decoration:none}
 </style>
 </head>
 
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <div class="logo">🤖 HOMOS AI</div>
-  <button class="btn" onclick="newChat()">➕ محادثة جديدة</button>
-  <button class="btn" onclick="openSub()">⭐ الاشتراك</button>
-  <div class="chat-list" id="chatList"></div>
-</div>
+<header>
+  <h1>HOMOS AI</h1>
+  <button onclick="subscribe()">اشترك</button>
+</header>
 
-<!-- Main -->
-<div class="main">
-  <div class="header" id="planName">الخطة: مجاني</div>
+<section class="hero" id="landing">
+  <h2>ذكاء ويب مستقل</h2>
+  <p>بيفهم العربي، بيدور في الإنترنت، ويديك الخلاصة.</p>
+</section>
+
+<section id="chatSection">
   <div class="chat" id="chat"></div>
-  <form class="input" onsubmit="send(event)">
-    <input id="text" placeholder="اكتب سؤالك..." required>
-    <button class="send">إرسال</button>
-  </form>
+  <input id="input" placeholder="اسأل HOMOS AI..." />
+</section>
+
+<section class="page" id="privacy">
+<div class="glass">
+<h2>سياسة الخصوصية</h2>
+<p>لا يتم جمع أي بيانات. كل شيء محفوظ محليًا.</p>
 </div>
+</section>
 
-<!-- Subscription -->
-<div class="modal" id="sub">
-  <div class="box">
-    <h3>🚀 خطط HOMOS AI</h3><br>
-
-    <div class="plan"><b>🆓 مجاني</b><br>20 رسالة يوميًا</div>
-    <div class="plan"><b>⭐ HOMOS PLUS</b><br>200 رسالة يوميًا</div>
-    <div class="plan"><b>🔥 HOMOS PRO</b><br>1000 رسالة يوميًا</div>
-    <div class="plan"><b>👑 HOMOS MAX</b><br>غير محدود</div>
-
-    <br>
-    <a class="btn" target="_blank"
-       href="https://wa.me/201012265953?text=مرحبًا%20عايز%20اشترك%20في%20HOMOS%20AI%20ومحتاج%20تفاصيل%20الخطط">
-      📲 اشترك واتساب
-    </a>
-
-    <br><br>
-    <input id="code" placeholder="ادخل كود التفعيل">
-    <button class="btn" onclick="applyCode()">تفعيل الكود</button>
-
-    <br><br>
-    <button class="btn" onclick="closeSub()">إغلاق</button>
-  </div>
+<section class="page" id="terms">
+<div class="glass">
+<h2>شروط الاستخدام</h2>
+<ul>
+<li>الخدمة لأغراض معرفية فقط</li>
+<li>النسخة المجانية محدودة</li>
+<li>الاشتراك غير قابل للاسترداد</li>
+</ul>
 </div>
+</section>
+
+<footer>
+<a href="#" onclick="showPage('privacy')">الخصوصية</a> |
+<a href="#" onclick="showPage('terms')">الشروط</a>
+</footer>
 
 <script>
-/* 🔑 ضع CometAPI Key هنا */
-const COMET_API_KEY = "sk-3huyFayIocVFlNYD9obPFo1K3nrT2ObN82hLXfBGx3vMXcjX";
-const MODEL_NAME = "meta-llama/llama-3-70b-instruct";
-
-/* 🎟️ أكواد الاشتراك */
-const CODES = {
-  "HOMOS-PLUS-2026": "plus",
-  "HOMOS-PRO-2026": "pro",
-  "HOMOS-MAX-2026": "max"
-};
-
-/* State */
-let chats = JSON.parse(localStorage.getItem("chats") || "[]");
-let current = 0;
-let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
-let plan = localStorage.getItem("plan") || "free";
-let usage = JSON.parse(localStorage.getItem("usage") || "{count:0,date:''}");
-
-/* Helpers */
-function save(){localStorage.setItem("chats",JSON.stringify(chats))}
-function updatePlanName(){
-  planName.textContent =
-    plan==="free"?"الخطة: مجاني":
-    plan==="plus"?"الخطة: HOMOS PLUS":
-    plan==="pro"?"الخطة: HOMOS PRO":
-    "الخطة: HOMOS MAX";
+// ===== الاشتراك =====
+function verifyCode(code){
+  const parts=code.split("-");
+  if(parts.length!==4) return false;
+  if(parts[0]!=="HOMOS") return false;
+  const days=parseInt(parts[1]);
+  const time=parseInt(parts[2]);
+  const sig=parts[3];
+  if(isNaN(days)||isNaN(time)) return false;
+  const validSig=((days+time)%10000).toString(36).toUpperCase().slice(0,4);
+  return sig===validSig;
 }
-function renderList(){
-  chatList.innerHTML="";
-  chats.forEach((c,i)=>{
-    let d=document.createElement("div");
-    d.className="chat-item";
-    d.textContent="محادثة "+(i+1);
-    d.onclick=()=>{current=i;renderChat()};
-    chatList.appendChild(d);
-  });
+function subscribe(){
+  window.open("https://wa.me/201012265953","_blank");
+  const code=prompt("ادخل كود الاشتراك");
+  if(code && verifyCode(code)){
+    const days=parseInt(code.split("-")[1]);
+    localStorage.setItem("homos_sub",JSON.stringify({
+      expires:Date.now()+days*86400000
+    }));
+    alert("تم تفعيل الاشتراك ✅");
+    location.reload();
+  }else{
+    alert("كود غير صالح ❌");
+  }
 }
-function renderChat(){
-  chat.innerHTML="";
-  chats[current].forEach(m=>{
-    let d=document.createElement("div");
-    d.className="msg "+m.role;
-    d.textContent=m.text;
-    chat.appendChild(d);
-  });
+const sub=JSON.parse(localStorage.getItem("homos_sub"));
+function isPro(){return sub && Date.now()<sub.expires}
+if(isPro()){
+  landing.style.display="none";
+  chatSection.style.display="block";
+}
+
+// ===== المجاني =====
+let usage=JSON.parse(localStorage.getItem("homos_usage"))||{c:0,d:new Date().toDateString()};
+if(usage.d!==new Date().toDateString()){
+  usage={c:0,d:new Date().toDateString()};
+}
+
+// ===== شخصية =====
+function persona(q){
+  if(q.includes("من انت")||q.includes("مين انت"))
+    return "أنا HOMOS AI، ذكاء ويب مستقل.";
+  if(q.includes("مين صنعك")||q.includes("من صنعك"))
+    return "تم تطويري بواسطة Mohamed Homos.";
+  return null;
+}
+
+// ===== بحث =====
+async function search(q){
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(
+    "https://api.duckduckgo.com/?q="+q+"&format=json&no_html=1"
+  );
+  return fetch(url).then(r=>r.json());
+}
+function sum(t){
+  let s=t.split(".");
+  return s.slice(0,3).join(".");
+}
+
+// ===== الشات =====
+const chat=document.getElementById("chat");
+const input=document.getElementById("input");
+function add(t,c){
+  const d=document.createElement("div");
+  d.className="msg "+c;
+  d.textContent=t;
+  chat.appendChild(d);
   chat.scrollTop=chat.scrollHeight;
 }
-function newChat(){
-  chats.push([]);
-  current=chats.length-1;
-  save();renderList();renderChat();
-}
 
-/* Limits */
-function limit(){
-  let today=new Date().toDateString();
-  if(usage.date!==today){usage={count:0,date:today}}
-  let max =
-    plan==="free"?20:
-    plan==="plus"?200:
-    plan==="pro"?1000:
-    Infinity;
-  if(usage.count>=max) return false;
-  usage.count++;
-  localStorage.setItem("usage",JSON.stringify(usage));
-  return true;
-}
-
-/* Send */
-async function send(e){
-  e.preventDefault();
-  if(!limit()){alert("وصلت للحد 😅 اشترك وكمل");return;}
-  let t=text.value;text.value="";
-  chats[current].push({role:"user",text:t});
-  let ai={role:"ai",text:"HOMOS AI بيفكر..."};
-  chats[current].push(ai);
-  renderChat();save();
-
-  try{
-    const r=await fetch("https://api.cometapi.com/v1/chat/completions",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":"Bearer "+COMET_API_KEY
-      },
-      body:JSON.stringify({
-        model:MODEL_NAME,
-        messages:[
-          {role:"system",content:"انت مساعد ذكي بتتكلم باللهجة المصرية وبأسلوب واضح"},
-          ...chats[current].map(m=>({
-            role:m.role==="user"?"user":"assistant",
-            content:m.text
-          }))
-        ]
-      })
-    });
-    const d=await r.json();
-    ai.text=d.choices?.[0]?.message?.content || "حصل خطأ";
-  }catch{ai.text="فيه مشكلة اتصال"}
-  renderChat();save();
-}
-
-/* Subscription */
-function openSub(){sub.style.display="flex"}
-function closeSub(){sub.style.display="none"}
-function applyCode(){
-  let c=code.value.trim();
-  if(!CODES[c] || usedCodes.includes(c)){
-    alert("الكود غير صحيح");
+input.onkeydown=async e=>{
+  if(e.key!=="Enter"||!input.value)return;
+  if(!isPro() && usage.c>=20){
+    add("🚫 انتهت الأسئلة المجانية اليوم.","bot");
     return;
   }
-  usedCodes.push(c);
-  localStorage.setItem("usedCodes",JSON.stringify(usedCodes));
-  plan=CODES[c];
-  localStorage.setItem("plan",plan);
-  updatePlanName();
-  alert("تم تفعيل الاشتراك بنجاح 🎉");
-  closeSub();
-}
+  usage.c++;
+  localStorage.setItem("homos_usage",JSON.stringify(usage));
 
-/* Init */
-if(chats.length===0)newChat();
-renderList();renderChat();updatePlanName();
+  const q=input.value;
+  input.value="";
+  add(q,"user");
+
+  const p=persona(q);
+  if(p){ add(p,"bot"); return; }
+
+  add("🔍 بدوّر...","bot");
+  const r=await search(q);
+  const text=r.Abstract||r.Answer||"ملقتش معلومة واضحة.";
+  chat.lastChild.textContent=sum(text);
+};
+
+// ===== تنقل =====
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
+  chatSection.style.display="none";
+  landing.style.display="none";
+  document.getElementById(id).style.display="block";
+}
 </script>
 
 </body>
